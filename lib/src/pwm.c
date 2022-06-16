@@ -31,12 +31,13 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
 
-#define MAX_PWM_HANDLES 4
+#define MAX_PWM_HANDLES 2
 
 /* Structure backing a pwm handle */
 struct pwm_data {
@@ -70,27 +71,37 @@ static const struct pin_config {
     const char *const	mode;
     const char *const	period;
     const char *const	ratio;
+    const char *const	function;
+    const char *const	alt;
 } pin_configs[] = {
-    { .pin    = 18, /* Physical pin 12 */
-      .handle = 0,
-      .mode   = "dev.pwm.0.mode",
-      .period = "dev.pwm.0.period",
-      .ratio  = "dev.pwm.0.ratio" },
-    { .pin    = 13, /* Physical pin 33 */
+    { .pin	= 18,		/* Physical pin 12 */
+      .handle	= 0,
+      .mode	= "dev.pwm.0.mode",
+      .period	= "dev.pwm.0.period",
+      .ratio	= "dev.pwm.0.ratio",
+      .function = "dev.gpio.0.pin.18.function",
+      .alt      = "alt5" },
+/*
+    { .pin    = 13, // Physical pin 33
       .handle = 2,
       .mode   = "dev.pwm.1.mode",
       .period = "dev.pwm.1.period",
       .ratio  = "dev.pwm.1.ratio" },
+*/
     { .pin    = 12, /* Physical pin 32 */
       .handle = 1,
       .mode   = "dev.pwm.0.mode2",
       .period = "dev.pwm.0.period2",
-      .ratio  = "dev.pwm.0.ratio2" },
-    { .pin    = 19, /* Physical pin 35 */
+      .ratio  = "dev.pwm.0.ratio2",
+      .function = "dev.gpio.0.pin.12.function",
+      .alt      = "alt0" },
+/*
+    { .pin    = 19, // Physical pin 35
       .handle = 3,
       .mode   = "dev.pwm.1.mode2",
       .period = "dev.pwm.1.period2",
       .ratio  = "dev.pwm.1.ratio2" },
+*/
 };
 
 const char *
@@ -128,6 +139,10 @@ pwm_open(int pin)
     /* The pin is already in use */
     if (hdls[hdl].used)
 	return PWME_BUSY;
+
+    /* Setup the gpio pin function */
+    if (sysctlbyname(cfg->function, NULL, NULL, cfg->alt, strlen(cfg->alt)) < 0)
+	return PWME_SYSCTLWR;
 
     /* Set the mode */
     int new_mode = 1; /* PWM mode */

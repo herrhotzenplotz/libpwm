@@ -1,7 +1,4 @@
-LIB	=	pwm
+SUBDIR	=	lib	\
+		examples
 
-SRCS	=	src/pwm.c
-
-CFLAGS	+=	-Iinclude
-
-.include <bsd.lib.mk>
+.include <bsd.subdir.mk>
