@@ -10,6 +10,19 @@
 #include <stdio.h>
 #include <string.h>
 
+static void
+usage(void)
+{
+	fprintf(stderr, "usage: %s pin-number\n", getprogname());
+}
+
+static void
+eusage(const char *message)
+{
+	usage();
+	err(EXIT_FAILURE, "%s", message);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -22,7 +35,7 @@ main(int argc, char *argv[])
 		err(EXIT_FAILURE, "pwm_init: %s", pwm_strerror(rc));
 
 	if (argc != 2)
-		errx(1, "missing argument");
+		eusage("missing argument");
 
 	pin = strtoul(argv[1], NULL, 10);
 
